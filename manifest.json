@@ -1,0 +1,9 @@
+{
+  "id": "ai-prettier-obsidian-plugin",
+  "name": "ai-prettier-obsidian-plugin",
+  "version": "1.0.0",
+  "description": "A plugin for Obsidian that uses AI to format your notes",
+  "author": "Rodrigo Cipriani",
+  "authorUrl": "https://www.linkedin.com/in/rodrigociprianidarosa",
+  "isDesktopOnly": true
+}
