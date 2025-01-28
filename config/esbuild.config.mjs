@@ -7,22 +7,21 @@ const __dirname = path.dirname(__filename);
 
 const isProduction = process.argv[2] === "production";
 
-async function start() {
-  const ctx = await esbuild.context({
-    entryPoints: [path.join(__dirname, "..", "src", "main.ts")],
-    bundle: true,
-    platform: "node",
-    target: "es2017",
-    outfile: path.join(__dirname, "..", "main.js"),
-    external: ["obsidian"],
-  });
+const context = await esbuild.context({
+  entryPoints: ["src/main.ts"],
+  bundle: true,
+  external: ["obsidian"],
+  format: "cjs",
+  target: "es2016",
+  logLevel: "info",
+  sourcemap: "inline",
+  treeShaking: true,
+  outfile: "dist/main.js",
+});
 
-  if (!isProduction) {
-    await ctx.watch(); // Enable watch mode during development
-    console.log("Watching for changes...");
-  }
-
-  await ctx.rebuild(); // Initial build
+if (isProduction) {
+  await context.rebuild();
+  process.exit(0);
+} else {
+  await context.watch();
 }
-
-start();
