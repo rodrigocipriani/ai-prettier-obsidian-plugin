@@ -1,9 +1,23 @@
 {
-  "id": "ai-prettier-obsidian-plugin",
-  "name": "ai-prettier-obsidian-plugin",
+  "id": "notes-copilot",
+  "name": "Notes Copilot",
   "version": "1.0.0",
-  "description": "A plugin for Obsidian that uses AI to format your notes",
+  "minAppVersion": "0.15.0",
+  "description": "Use AI to organize text and create monthly summaries from daily notes. Supports both local (Ollama) and cloud (OpenAI) AI providers.",
   "author": "Rodrigo Cipriani",
-  "authorUrl": "https://www.linkedin.com/in/rodrigociprianidarosa",
-  "isDesktopOnly": true
+  "authorUrl": "https://github.com/rodrigocipriani",
+  "isDesktopOnly": true,
+  "fundingUrl": {
+    "Github Sponsor": "https://github.com/sponsors/rodrigocipriani",
+    "Buy Me a Coffee": "https://www.buymeacoffee.com/rodrigocipriani"
+  },
+  "keywords": [
+    "ai",
+    "text organization",
+    "summarization",
+    "ollama",
+    "openai",
+    "gpt",
+    "daily notes"
+  ]
 }
