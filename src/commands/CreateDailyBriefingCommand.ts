@@ -3,6 +3,7 @@ import { AIService, LoadingNotice } from "../types";
 import { SummaryService } from "../services/SummaryService";
 import { NoticeService } from "../services/NoticeService";
 import { TickTickService } from "../services/TickTickService";
+import { VoiceService } from "../services/VoiceService";
 
 const DAILY_BRIEFING_PROMPT = (content: string, tasks: string) =>
   `Create a focused morning briefing based on my recent notes and tasks. 
@@ -37,6 +38,7 @@ const DAILY_BRIEFING_PROMPT = (content: string, tasks: string) =>
 
 export class CreateDailyBriefingCommand {
   private tickTickService = new TickTickService();
+  private voiceService = new VoiceService();
 
   constructor(
     private aiService: AIService,
@@ -98,16 +100,41 @@ export class CreateDailyBriefingCommand {
 
   private async saveDailyBriefing(content: string) {
     const today = new Date();
-    const fileName = `Daily Briefing ${today.toISOString().split("T")[0]}.md`;
+    const dateStr = today.toISOString().split("T")[0];
 
+    let audioContent = "";
+    if (this.config.generateAudio) {
+      try {
+        // Generate audio version
+        const audioBuffer = await this.voiceService.createAudio(content);
+
+        // Add audio player to content if generation was successful
+        audioContent = `
+![[Daily Briefing ${dateStr}.mp3]]
+
+> 🎧 Audio version available above
+`;
+
+        // Save audio file
+        await this.summaryService.createFileInDailyNotesFolder(
+          `Daily Briefing ${dateStr}.mp3`,
+          audioBuffer
+        );
+      } catch (error) {
+        console.error("Failed to generate audio:", error);
+        audioContent = "\n> Failed to generate audio version\n";
+      }
+    }
+
+    // Save markdown file with audio player (if generated)
     await this.summaryService.createFileInDailyNotesFolder(
-      fileName,
+      `Daily Briefing ${dateStr}.md`,
       `# ☀️ Morning Briefing - ${today.toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
       })}
-
+${audioContent}
 ${content}`
     );
   }

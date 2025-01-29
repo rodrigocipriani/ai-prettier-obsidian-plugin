@@ -105,9 +105,8 @@ ${await this.aggregateMonthContent(dailyNotes)}`;
 
   async createFileInDailyNotesFolder(
     fileName: string,
-    content: string
+    content: string | ArrayBuffer
   ): Promise<void> {
-    const dailyNotesPath = getDailyNotesPath(this.vault);
     const outputPath = getOutputPath(this.vault);
     await ensureFolderExists(this.vault, outputPath);
 
@@ -115,13 +114,24 @@ ${await this.aggregateMonthContent(dailyNotes)}`;
     await this.createFile(filePath, content);
   }
 
-  private async createFile(filePath: string, content: string): Promise<void> {
+  private async createFile(
+    filePath: string,
+    content: string | ArrayBuffer
+  ): Promise<void> {
     try {
       const file = this.vault.getAbstractFileByPath(filePath);
       if (file instanceof TFile) {
-        await this.vault.modify(file, content);
+        if (typeof content === "string") {
+          await this.vault.modify(file, content);
+        } else {
+          await this.vault.modifyBinary(file, content);
+        }
       } else {
-        await this.vault.create(filePath, content);
+        if (typeof content === "string") {
+          await this.vault.create(filePath, content);
+        } else {
+          await this.vault.createBinary(filePath, content);
+        }
       }
     } catch (error) {
       throw new Error(`Failed to create file: ${error.message}`);

@@ -28,6 +28,8 @@ export interface PluginSettings {
   ticktickClientSecret: string;
   ticktickAccessToken: string;
   ticktickRefreshToken: string;
+  generateAudio: boolean;
+  voiceModel: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -44,4 +46,6 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   ticktickClientSecret: "",
   ticktickAccessToken: "",
   ticktickRefreshToken: "",
+  generateAudio: true,
+  voiceModel: "nova",
 };

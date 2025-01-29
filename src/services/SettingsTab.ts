@@ -120,6 +120,36 @@ export class SettingsTab extends PluginSettingTab {
           })
       );
 
+    new Setting(containerEl)
+      .setName("Generate Audio")
+      .setDesc("Generate audio version of daily briefings")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.generateAudio)
+          .onChange(async (value) => {
+            this.plugin.settings.generateAudio = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Voice Model")
+      .setDesc("Choose the voice for audio generation")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("alloy", "Alloy")
+          .addOption("echo", "Echo")
+          .addOption("fable", "Fable")
+          .addOption("nova", "Nova")
+          .addOption("onyx", "Onyx")
+          .addOption("shimmer", "Shimmer")
+          .setValue(this.plugin.settings.voiceModel)
+          .onChange(async (value) => {
+            this.plugin.settings.voiceModel = value as any;
+            await this.plugin.saveSettings();
+          })
+      );
+
     // Folder Settings Section
     containerEl.createEl("h3", { text: "Folder Settings" });
     containerEl.createEl("p", {
