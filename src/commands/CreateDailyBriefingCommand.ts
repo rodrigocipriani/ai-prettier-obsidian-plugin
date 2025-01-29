@@ -4,6 +4,7 @@ import { SummaryService } from "../services/SummaryService";
 import { NoticeService } from "../services/NoticeService";
 import { TickTickService } from "../services/TickTickService";
 import { VoiceService } from "../services/VoiceService";
+import { ConfigService } from "../services/ConfigService";
 
 const DAILY_BRIEFING_PROMPT = (content: string, tasks: string) =>
   `Create a focused morning briefing based on my recent notes and tasks. 
@@ -39,6 +40,7 @@ const DAILY_BRIEFING_PROMPT = (content: string, tasks: string) =>
 export class CreateDailyBriefingCommand {
   private tickTickService = new TickTickService();
   private voiceService = new VoiceService();
+  private config = ConfigService.getInstance().getSettings();
 
   constructor(
     private aiService: AIService,
