@@ -2,25 +2,42 @@ import { TFile } from "obsidian";
 import { AIService, LoadingNotice } from "../types";
 import { SummaryService } from "../services/SummaryService";
 import { NoticeService } from "../services/NoticeService";
+import { TickTickService } from "../services/TickTickService";
 
-const DAILY_BRIEFING_PROMPT = (content: string) =>
-  `Create a morning briefing based on my recent notes. Include:
-   1. Important pending tasks or follow-ups
-   2. Upcoming events or deadlines
-   3. Recent patterns or habits to maintain
-   4. Key projects status
-   5. Suggested focus areas for today
+const DAILY_BRIEFING_PROMPT = (content: string, tasks: string) =>
+  `Create a focused morning briefing based on my recent notes and tasks. 
+   Prioritize what's truly important and time-sensitive for TODAY.
+   
+   IMPORTANT: Do not include a title or header - it will be added automatically.
+   
+   Start with a brief executive summary that captures today's essence and priorities.
+   
+   Then cover these key areas:
+   - Critical tasks and deadlines for today
+   - Important meetings or events
+   - Quick status of active projects
+   - Main focus areas
+   - A key insight if relevant
+   
+   End with a brief motivational message.
    
    IMPORTANT RULES:
-   - Use emojis for better readability
-   - Keep it concise and actionable
-   - Use the same language as my notes
-   - Format the output in markdown
-   - Maintain the writing style and tone from my notes
+   - If notes are in Portuguese, write in Portuguese
+   - Be selective - include only what matters for today
+   - Use emojis to highlight importance
+   - Keep it brief and clear
+   - Format in markdown
+   - Include specific times for time-sensitive items
    
-   Here are my recent notes:\n${content}`;
+   Notes Content:
+   ${content}
+   
+   Task Context:
+   ${tasks}`;
 
 export class CreateDailyBriefingCommand {
+  private tickTickService = new TickTickService();
+
   constructor(
     private aiService: AIService,
     private summaryService: SummaryService,
@@ -31,17 +48,25 @@ export class CreateDailyBriefingCommand {
     const loading = NoticeService.showLoading("Getting recent notes...");
 
     try {
-      const files = await this.getRecentDailyNotes();
+      // Get notes and tasks in parallel
+      const [files, tasks] = await Promise.all([
+        this.getRecentDailyNotes(),
+        this.tickTickService.getRelevantTasks(),
+      ]);
+
       if (files.length === 0) {
         throw new Error("No daily notes found for analysis");
       }
 
-      loading.setMessage("Analyzing your notes...");
-      const content = await this.summaryService.aggregateMonthContent(files);
+      loading.setMessage("Analyzing your notes and tasks...");
+      const notesContent = await this.summaryService.aggregateMonthContent(
+        files
+      );
+      const tasksContent = this.tickTickService.formatTasksForBriefing(tasks);
 
       loading.setMessage("Creating your daily briefing...");
       const briefing = await this.aiService.generateResponse(
-        DAILY_BRIEFING_PROMPT(content)
+        DAILY_BRIEFING_PROMPT(notesContent, tasksContent)
       );
 
       await this.saveDailyBriefing(briefing);
@@ -77,7 +102,13 @@ export class CreateDailyBriefingCommand {
 
     await this.summaryService.createFileInDailyNotesFolder(
       fileName,
-      `# 🌅 Daily Briefing - ${today.toLocaleDateString()}\n\n${content}`
+      `# ☀️ Morning Briefing - ${today.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })}
+
+${content}`
     );
   }
 }

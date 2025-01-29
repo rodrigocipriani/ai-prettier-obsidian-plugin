@@ -5,7 +5,6 @@ export class OpenAIService implements AIService {
   private config = ConfigService.getInstance().getOpenAIConfig();
 
   async checkConnection(): Promise<boolean> {
-    console.log("config", this.config);
     try {
       const response = await fetch(`${this.config.API_HOST}/v1/models`, {
         headers: {

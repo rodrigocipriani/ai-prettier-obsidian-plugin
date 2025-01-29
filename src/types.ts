@@ -23,6 +23,11 @@ export interface PluginSettings {
   briefingDaysToAnalyze: number;
   dailyNotesFolder: string;
   outputFolder: string;
+  ticktickEnabled: boolean;
+  ticktickClientId: string;
+  ticktickClientSecret: string;
+  ticktickAccessToken: string;
+  ticktickRefreshToken: string;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -34,4 +39,9 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   briefingDaysToAnalyze: 30,
   dailyNotesFolder: "Daily Notes",
   outputFolder: "AI Generated",
+  ticktickEnabled: false,
+  ticktickClientId: "",
+  ticktickClientSecret: "",
+  ticktickAccessToken: "",
+  ticktickRefreshToken: "",
 };

@@ -19,5 +19,11 @@
     "openai",
     "gpt",
     "daily notes"
+  ],
+  "protocols": [
+    {
+      "name": "Notes Copilot OAuth",
+      "schemes": ["notes-copilot"]
+    }
   ]
 }

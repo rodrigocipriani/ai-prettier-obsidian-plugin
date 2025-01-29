@@ -1,6 +1,7 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, Notice } from "obsidian";
 import MyPlugin from "../main";
 import { PluginSettings } from "../types";
+import { TickTickAuthService } from "./TickTickAuthService";
 
 export class SettingsTab extends PluginSettingTab {
   plugin: MyPlugin;
@@ -151,6 +152,83 @@ export class SettingsTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    // TickTick Integration Section
+    containerEl.createEl("h3", { text: "TickTick Integration" });
+    containerEl.createEl("p", {
+      text: "Connect with TickTick to include tasks in your daily briefing",
+      cls: "setting-item-description",
+    });
+
+    new Setting(containerEl)
+      .setName("Enable TickTick")
+      .setDesc("Enable TickTick integration")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.ticktickEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.ticktickEnabled = value;
+            await this.plugin.saveSettings();
+            // Force refresh the display to show/hide the fields
+            this.display();
+          })
+      );
+
+    if (this.plugin.settings.ticktickEnabled) {
+      new Setting(containerEl)
+        .setName("Client ID")
+        .setDesc("Your TickTick API Client ID")
+        .addText((text) =>
+          text
+            .setPlaceholder("Enter your Client ID")
+            .setValue(this.plugin.settings.ticktickClientId)
+            .onChange(async (value) => {
+              this.plugin.settings.ticktickClientId = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      new Setting(containerEl)
+        .setName("Client Secret")
+        .setDesc("Your TickTick API Client Secret")
+        .addText((text) =>
+          text
+            .setPlaceholder("Enter your Client Secret")
+            .setValue(this.plugin.settings.ticktickClientSecret)
+            .onChange(async (value) => {
+              this.plugin.settings.ticktickClientSecret = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      new Setting(containerEl)
+        .setName("Connect")
+        .setDesc("Connect to your TickTick account")
+        .addButton((button) =>
+          button
+            .setButtonText(
+              this.plugin.settings.ticktickAccessToken
+                ? "Reconnect"
+                : "Connect to TickTick"
+            )
+            .onClick(async () => {
+              if (
+                !this.plugin.settings.ticktickClientId ||
+                !this.plugin.settings.ticktickClientSecret
+              ) {
+                new Notice(
+                  "Please enter both Client ID and Client Secret first"
+                );
+                return;
+              }
+              const authService = new TickTickAuthService();
+              const authUrl = authService.getAuthUrl();
+              if (authUrl) {
+                window.open(authUrl);
+              }
+            })
+        );
+    }
 
     // Add help text at the bottom
     containerEl.createEl("p", {

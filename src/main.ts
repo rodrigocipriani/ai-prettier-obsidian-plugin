@@ -7,6 +7,7 @@ import { SettingsTab } from "./services/SettingsTab";
 import { PluginSettings, DEFAULT_SETTINGS, AIService } from "./types";
 import { ConfigService } from "./services/ConfigService";
 import { CreateDailyBriefingCommand } from "./commands/CreateDailyBriefingCommand";
+import { TickTickAuthService } from "./services/TickTickAuthService";
 
 export default class MyPlugin extends Plugin {
   settings: PluginSettings;
@@ -80,6 +81,19 @@ export default class MyPlugin extends Plugin {
         }
       },
     });
+
+    // Register the URI handler for TickTick OAuth callback
+    this.registerObsidianProtocolHandler(
+      "ticktick-callback",
+      async (params) => {
+        if (params.code) {
+          const authService = new TickTickAuthService();
+          await authService.handleCallback(params.code);
+          await this.saveSettings();
+          new Notice("TickTick authentication completed");
+        }
+      }
+    );
   }
 
   async loadSettings() {
