@@ -1,25 +1,38 @@
 import { Plugin, MarkdownView, Notice } from "obsidian";
-import { OllamaService } from "./services/OllamaService";
+import { AIServiceFactory } from "./services/AIServiceFactory";
 import { SummaryService } from "./services/SummaryService";
 import { OrganizeTextCommand } from "./commands/OrganizeTextCommand";
 import { CreateMonthlySummaryCommand } from "./commands/CreateMonthlySummaryCommand";
+import { SettingsTab } from "./services/SettingsTab";
+import { PluginSettings, DEFAULT_SETTINGS, AIService } from "./types";
+import { ConfigService } from "./services/ConfigService";
 
 export default class MyPlugin extends Plugin {
-  private ollamaService: OllamaService;
+  settings: PluginSettings;
+  private aiService: AIService;
   private summaryService: SummaryService;
 
   async onload() {
+    await this.loadSettings();
+
+    // Initialize ConfigService with settings
+    ConfigService.initialize(this.settings);
+
+    this.addSettingTab(new SettingsTab(this.app, this));
+
+    this.aiService = AIServiceFactory.getService();
+    this.summaryService = new SummaryService(this.app.vault);
+
     console.log("Loading the plugin");
 
-    this.ollamaService = new OllamaService();
-    this.summaryService = new SummaryService(this.app.vault);
+    const provider = ConfigService.getInstance().getActiveProvider();
 
     this.addCommand({
       id: "organize-text-with-ai",
-      name: "Organize Text with AI",
+      name: `Organize Text with AI (${provider.toUpperCase()})`,
       callback: async () => {
         try {
-          const command = new OrganizeTextCommand(this.ollamaService, () =>
+          const command = new OrganizeTextCommand(this.aiService, () =>
             this.app.workspace.getActiveViewOfType(MarkdownView)
           );
           await command.execute();
@@ -32,11 +45,11 @@ export default class MyPlugin extends Plugin {
 
     this.addCommand({
       id: "create-monthly-summary",
-      name: "Create Monthly Summary from Daily Notes",
+      name: `Create Monthly Summary (${provider.toUpperCase()})`,
       callback: async () => {
         try {
           const command = new CreateMonthlySummaryCommand(
-            this.ollamaService,
+            this.aiService,
             this.summaryService
           );
           await command.execute();
@@ -47,6 +60,17 @@ export default class MyPlugin extends Plugin {
         }
       },
     });
+  }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+    // Re-initialize ConfigService with new settings
+    ConfigService.initialize(this.settings);
+    this.aiService = AIServiceFactory.getService();
   }
 
   onunload() {

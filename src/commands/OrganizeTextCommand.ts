@@ -1,12 +1,12 @@
 import { MarkdownView } from "obsidian";
-import { OllamaService } from "../services/OllamaService";
+import { AIService } from "../types";
 import { NoticeService } from "../services/NoticeService";
 
 const ORGANIZE_TEXT = (content: string) => `Organize this text:\n${content}`;
 
 export class OrganizeTextCommand {
   constructor(
-    private ollamaService: OllamaService,
+    private aiService: AIService,
     private getActiveView: () => MarkdownView | null
   ) {}
 
@@ -14,7 +14,7 @@ export class OrganizeTextCommand {
     const loading = NoticeService.showLoading("Connecting to Ollama...");
 
     try {
-      if (!(await this.ollamaService.checkConnection())) {
+      if (!(await this.aiService.checkConnection())) {
         throw new Error(
           "Cannot connect to Ollama. Please make sure Ollama is installed and running."
         );
@@ -28,7 +28,7 @@ export class OrganizeTextCommand {
       const content = activeView.editor.getValue();
       loading.setMessage("Organizing text with AI...");
 
-      const organizedContent = await this.ollamaService.generateResponse(
+      const organizedContent = await this.aiService.generateResponse(
         ORGANIZE_TEXT(content)
       );
       activeView.editor.setValue(organizedContent);

@@ -1,8 +1,7 @@
 import { TFile } from "obsidian";
-import { OllamaService } from "../services/OllamaService";
+import { AIService, LoadingNotice } from "../types";
 import { SummaryService } from "../services/SummaryService";
 import { NoticeService } from "../services/NoticeService";
-import { LoadingNotice } from "../types";
 
 const MONTHLY_SUMMARY = (content: string) =>
   `Create a comprehensive monthly summary of these daily notes. 
@@ -15,7 +14,7 @@ const MONTHLY_SUMMARY = (content: string) =>
 
 export class CreateMonthlySummaryCommand {
   constructor(
-    private ollamaService: OllamaService,
+    private aiService: AIService,
     private summaryService: SummaryService
   ) {}
 
@@ -23,7 +22,7 @@ export class CreateMonthlySummaryCommand {
     const loading = NoticeService.showLoading("Connecting to Ollama...");
 
     try {
-      if (!(await this.ollamaService.checkConnection())) {
+      if (!(await this.aiService.checkConnection())) {
         throw new Error(
           "Cannot connect to Ollama. Please make sure Ollama is installed and running."
         );
@@ -69,7 +68,7 @@ export class CreateMonthlySummaryCommand {
     monthKey: string,
     content: string
   ) {
-    const summary = await this.ollamaService.generateResponse(
+    const summary = await this.aiService.generateResponse(
       MONTHLY_SUMMARY(content)
     );
     await this.summaryService.saveMonthlySummary(monthKey, summary, content);

@@ -1,20 +1,22 @@
-import { MODEL, API_HOST } from "../constants/config";
-import { OllamaResponse } from "../types";
+import { AIService, OllamaResponse } from "../types";
+import { ConfigService } from "./ConfigService";
 
-export class OllamaService {
+export class OllamaService implements AIService {
+  private config = ConfigService.getInstance().getOllamaConfig();
+
   async checkConnection(): Promise<boolean> {
-    const healthCheck = await fetch(`${API_HOST}/api/version`);
+    const healthCheck = await fetch(`${this.config.API_HOST}/api/version`);
     return healthCheck.ok;
   }
 
   async generateResponse(prompt: string): Promise<string> {
-    const response = await fetch(`${API_HOST}/api/generate`, {
+    const response = await fetch(`${this.config.API_HOST}/api/generate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: this.config.MODEL,
         prompt,
       }),
     });
