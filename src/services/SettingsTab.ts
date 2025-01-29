@@ -96,6 +96,62 @@ export class SettingsTab extends PluginSettingTab {
           })
       );
 
+    // Daily Briefing Settings Section
+    containerEl.createEl("h3", { text: "Daily Briefing Settings" });
+    containerEl.createEl("p", {
+      text: "Settings for the daily briefing generation",
+      cls: "setting-item-description",
+    });
+
+    new Setting(containerEl)
+      .setName("Days to Analyze")
+      .setDesc("Number of past days to analyze for the daily briefing")
+      .addText((text) =>
+        text
+          .setPlaceholder("30")
+          .setValue(String(this.plugin.settings.briefingDaysToAnalyze))
+          .onChange(async (value) => {
+            const days = Number(value);
+            if (!isNaN(days) && days > 0) {
+              this.plugin.settings.briefingDaysToAnalyze = days;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
+
+    // Folder Settings Section
+    containerEl.createEl("h3", { text: "Folder Settings" });
+    containerEl.createEl("p", {
+      text: "Configure where to find your notes and save generated content",
+      cls: "setting-item-description",
+    });
+
+    new Setting(containerEl)
+      .setName("Daily Notes Folder")
+      .setDesc("The folder containing your daily notes")
+      .addText((text) =>
+        text
+          .setPlaceholder("Daily Notes")
+          .setValue(this.plugin.settings.dailyNotesFolder)
+          .onChange(async (value) => {
+            this.plugin.settings.dailyNotesFolder = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Output Folder")
+      .setDesc("Where to save generated briefings and summaries")
+      .addText((text) =>
+        text
+          .setPlaceholder("AI Generated")
+          .setValue(this.plugin.settings.outputFolder)
+          .onChange(async (value) => {
+            this.plugin.settings.outputFolder = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
     // Add help text at the bottom
     containerEl.createEl("p", {
       text: "Note: After changing the AI provider, you'll need to ensure the corresponding service is properly configured.",

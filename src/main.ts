@@ -6,6 +6,7 @@ import { CreateMonthlySummaryCommand } from "./commands/CreateMonthlySummaryComm
 import { SettingsTab } from "./services/SettingsTab";
 import { PluginSettings, DEFAULT_SETTINGS, AIService } from "./types";
 import { ConfigService } from "./services/ConfigService";
+import { CreateDailyBriefingCommand } from "./commands/CreateDailyBriefingCommand";
 
 export default class MyPlugin extends Plugin {
   settings: PluginSettings;
@@ -54,6 +55,25 @@ export default class MyPlugin extends Plugin {
           );
           await command.execute();
           new Notice("Monthly summaries created successfully");
+        } catch (error) {
+          new Notice(`Error: ${error.message}`);
+          console.error(error);
+        }
+      },
+    });
+
+    this.addCommand({
+      id: "create-daily-briefing",
+      name: `Create Daily Briefing (${provider.toUpperCase()})`,
+      callback: async () => {
+        try {
+          const command = new CreateDailyBriefingCommand(
+            this.aiService,
+            this.summaryService,
+            30 // days to analyze, could be made configurable in settings
+          );
+          await command.execute();
+          new Notice("Daily briefing created successfully");
         } catch (error) {
           new Notice(`Error: ${error.message}`);
           console.error(error);

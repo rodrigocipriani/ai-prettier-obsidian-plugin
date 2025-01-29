@@ -20,6 +20,9 @@ export interface PluginSettings {
   ollamaModel: string;
   ollamaHost: string;
   openAIModel: string;
+  briefingDaysToAnalyze: number;
+  dailyNotesFolder: string;
+  outputFolder: string;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -28,4 +31,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   ollamaModel: "llama3:latest",
   ollamaHost: "http://localhost:11434",
   openAIModel: "gpt-3.5-turbo",
+  briefingDaysToAnalyze: 30,
+  dailyNotesFolder: "Daily Notes",
+  outputFolder: "AI Generated",
 };

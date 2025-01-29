@@ -1,40 +1,48 @@
 import { TFile, Vault } from "obsidian";
+import {
+  getDailyNotesPath,
+  getOutputPath,
+  ensureFolderExists,
+} from "../utils/dailyNotes";
 
 export class SummaryService {
   constructor(private vault: Vault) {}
 
   getDailyNoteFiles(): TFile[] {
-    const dailyNotesFolder = "Daily Notes";
+    const dailyNotesPath = getDailyNotesPath(this.vault);
     return this.vault
       .getFiles()
       .filter(
         (file) =>
-          file.path.startsWith(dailyNotesFolder) && file.extension === "md"
+          file.path.startsWith(dailyNotesPath) && file.path.endsWith(".md")
       );
+  }
+
+  async aggregateMonthContent(files: TFile[]): Promise<string> {
+    let content = "";
+    for (const file of files) {
+      content += `## ${file.basename}\n\n`;
+      content += (await this.vault.read(file)) + "\n\n";
+    }
+    return content;
   }
 
   groupFilesByMonth(files: TFile[]): { [key: string]: TFile[] } {
     const filesByMonth: { [key: string]: TFile[] } = {};
-    for (const file of files) {
-      const match = file.name.match(/(\d{4}-\d{2})/);
+
+    files.forEach((file) => {
+      // Assuming file names are in format YYYY-MM-DD
+      const match = file.basename.match(/^(\d{4})-(\d{2})/);
       if (match) {
-        const monthKey = match[1];
+        const monthKey = `${match[1]}-${match[2]}`;
         if (!filesByMonth[monthKey]) {
           filesByMonth[monthKey] = [];
         }
         filesByMonth[monthKey].push(file);
       }
-    }
-    return filesByMonth;
-  }
+    });
 
-  async aggregateMonthContent(files: TFile[]): Promise<string> {
-    let allContent = "";
-    for (const file of files) {
-      const content = await this.vault.read(file);
-      allContent += `## ${file.name}\n${content}\n\n`;
-    }
-    return allContent;
+    return filesByMonth;
   }
 
   async saveMonthlySummary(
@@ -42,19 +50,38 @@ export class SummaryService {
     summary: string,
     originalContent: string
   ): Promise<void> {
-    const folderPath = "Monthly Summary";
-    const summaryFileName = `${folderPath}/${monthKey}-Summary.md`;
-    const summaryContent = `# Monthly Summary for ${monthKey}\n\n${summary}\n\n\n\`\`\`\n${originalContent}\n\`\`\``;
+    const outputPath = getOutputPath(this.vault);
+    await ensureFolderExists(this.vault, outputPath);
 
-    if (!(await this.vault.adapter.exists(folderPath))) {
-      await this.vault.createFolder(folderPath);
-    }
+    const fileName = `${monthKey} Summary.md`;
+    const filePath = `${outputPath}/${fileName}`;
 
-    const existingFile = this.vault.getAbstractFileByPath(summaryFileName);
-    if (existingFile instanceof TFile) {
-      await this.vault.modify(existingFile, summaryContent);
-    } else {
-      await this.vault.create(summaryFileName, summaryContent);
+    const fileContent = `# Monthly Summary - ${monthKey}\n\n${summary}\n\n## Original Content\n\n${originalContent}`;
+
+    await this.createFile(filePath, fileContent);
+  }
+
+  async createFileInDailyNotesFolder(
+    fileName: string,
+    content: string
+  ): Promise<void> {
+    const outputPath = getOutputPath(this.vault);
+    await ensureFolderExists(this.vault, outputPath);
+
+    const filePath = `${outputPath}/${fileName}`;
+    await this.createFile(filePath, content);
+  }
+
+  private async createFile(filePath: string, content: string): Promise<void> {
+    try {
+      const file = this.vault.getAbstractFileByPath(filePath);
+      if (file) {
+        await this.vault.modify(file as TFile, content);
+      } else {
+        await this.vault.create(filePath, content);
+      }
+    } catch (error) {
+      throw new Error(`Failed to create file: ${error.message}`);
     }
   }
 }

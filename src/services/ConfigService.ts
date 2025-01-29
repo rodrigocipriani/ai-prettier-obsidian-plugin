@@ -19,6 +19,10 @@ export class ConfigService {
     return ConfigService.instance;
   }
 
+  getSettings(): PluginSettings {
+    return this.settings;
+  }
+
   getOpenAIConfig() {
     return {
       API_KEY: this.settings.openAIKey,
