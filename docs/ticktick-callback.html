@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TickTick Auth Callback</title>
+    <script>
+      window.onload = function () {
+        const code = new URLSearchParams(window.location.search).get("code");
+        if (code) {
+          window.location.href = `obsidian://ticktick-callback?code=${code}`;
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <p>Redirecting back to Obsidian...</p>
+  </body>
+</html>
